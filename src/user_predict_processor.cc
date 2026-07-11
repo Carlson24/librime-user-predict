@@ -56,6 +56,34 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
   int ch = key_event.keycode();
   string input = context->input();
 
+  if (ch == XK_BackSpace || ch == XK_Escape) {
+    if (!context->composition().empty() &&
+        context->composition().back().HasTag("prediction")) {
+      ctx.ResetMemoryChain();
+      context->Clear();
+      return kAccepted;
+    }
+  }
+
+  if (!context->composition().empty() &&
+      context->composition().back().HasTag("prediction")) {
+    if (ch == XK_space) {
+      ctx.ResetMemoryChain();
+      context->Clear();
+      return kNoop;
+    }
+    if ((ch >= XK_0 && ch <= XK_9) || (ch >= XK_KP_0 && ch <= XK_KP_9)) {
+      int digit = (ch >= XK_KP_0 && ch <= XK_KP_9) ? ch - XK_KP_0 : ch - XK_0;
+      ctx.ResetMemoryChain();
+      context->Clear();
+      engine_->CommitText(std::to_string(digit));
+      return kAccepted;
+    }
+    ctx.ResetMemoryChain();
+    context->Clear();
+    return kNoop;
+  }
+
   if (just_committed_ && ch != XK_BackSpace && !key_event.shift() &&
       !key_event.ctrl() && !key_event.alt()) {
     just_committed_ = false;
