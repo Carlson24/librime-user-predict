@@ -244,8 +244,7 @@ void UserPredictContext::PeriodicCleanup() {
   db_->Update(kMetaLastClean, std::to_string(now));
 
   if (deleted_count > 0) {
-    LOG(INFO) << "user_predict: cleaned " << deleted_count
-              << " expired entries.";
+    LOG(INFO) << "user_predict: cleaned " << deleted_count << " expired entries.";
   }
 }
 
@@ -257,8 +256,9 @@ void UserPredictContext::FetchAndClean(const string& query_key,
     return;
 
   auto da = db_->Query(query_key);
-  if (!da || da->exhausted())
+  if (!da || da->exhausted()) {
     return;
+  }
 
   time_t now = std::time(nullptr);
   int scan_count = 0;
@@ -324,6 +324,7 @@ void UserPredictContext::FetchAndClean(const string& query_key,
         if (seen.find(c.word) == seen.end()) {
           cands.push_back(c);
           seen.insert(c.word);
+        } else {
         }
       }
       i++;

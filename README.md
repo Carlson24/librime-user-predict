@@ -2,6 +2,8 @@
 
 用户输入行为学习与预测插件。通过记录用户的词语搭配习惯，在输入时自动提供预测候选词。
 
+**原始项目：[rime-wanxiang-lua](https://github.com/amzxyz/rime-wanxiang/blob/wanxiang/lua/wanxiang/user_predict.lua)**
+
 ## 功能
 
 - **学习**: 自动记录用户上屏的词语顺序（S-Gram / 2-Gram / 1-Gram / P-Gram）

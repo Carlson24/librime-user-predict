@@ -68,18 +68,15 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
   if (!context->composition().empty() &&
       context->composition().back().HasTag("prediction")) {
     if (ch == XK_space) {
-      ctx.ResetMemoryChain();
       context->Clear();
       return kNoop;
     }
     if ((ch >= XK_0 && ch <= XK_9) || (ch >= XK_KP_0 && ch <= XK_KP_9)) {
       int digit = (ch >= XK_KP_0 && ch <= XK_KP_9) ? ch - XK_KP_0 : ch - XK_0;
-      ctx.ResetMemoryChain();
       context->Clear();
       engine_->CommitText(std::to_string(digit));
       return kAccepted;
     }
-    ctx.ResetMemoryChain();
     context->Clear();
     return kNoop;
   }
@@ -286,8 +283,9 @@ void UserPredictProcessor::LearnCommit(const string& text) {
   auto text_chars = UserPredictContext::GetUtf8Chars(text);
   int len_text = static_cast<int>(text_chars.size());
 
-  if (len_text > 4)
+  if (len_text > 4) {
     should_record = false;
+  }
 
   if (should_record && UserPredictContext::IsToneSymbol(text)) {
     auto prev_chars = UserPredictContext::GetUtf8Chars(state.last_commit());
@@ -304,8 +302,9 @@ void UserPredictProcessor::LearnCommit(const string& text) {
     }
   }
 
-  if (should_record && state.last_commit() == text)
+  if (should_record && state.last_commit() == text) {
     should_record = false;
+  }
 
   if (should_record && state.history().size() >= 2) {
     if (text == state.history()[state.history().size() - 2]) {
