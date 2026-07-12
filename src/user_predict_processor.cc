@@ -56,36 +56,6 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
   int ch = key_event.keycode();
   string input = context->input();
 
-  if (ch == XK_BackSpace || ch == XK_Escape) {
-    if (!context->composition().empty() &&
-        context->composition().back().HasTag("prediction")) {
-      ctx.ResetMemoryChain();
-      context->Clear();
-      return kAccepted;
-    }
-  }
-
-  if (!context->composition().empty() &&
-      context->composition().back().HasTag("prediction")) {
-    if (ch == XK_space) {
-      context->Clear();
-      return kNoop;
-    }
-    if ((ch >= XK_0 && ch <= XK_9) || (ch >= XK_KP_0 && ch <= XK_KP_9)) {
-      int digit = (ch >= XK_KP_0 && ch <= XK_KP_9) ? ch - XK_KP_0 : ch - XK_0;
-      context->Clear();
-      engine_->CommitText(std::to_string(digit));
-      return kAccepted;
-    }
-    context->Clear();
-    return kNoop;
-  }
-
-  if (just_committed_ && ch != XK_BackSpace && !key_event.shift() &&
-      !key_event.ctrl() && !key_event.alt()) {
-    just_committed_ = false;
-  }
-
   if (ch == XK_BackSpace) {
     auto current_time = std::chrono::steady_clock::now();
     bool is_safe_to_undo = !context->IsComposing() || ctx.is_predicting();
@@ -104,24 +74,40 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
 
     just_committed_ = false;
     if (ctx.is_predicting()) {
-      context->Clear();
       ctx.ResetMemoryChain();
+      context->Clear();
       return kAccepted;
     }
   }
 
   if (ctx.is_predicting()) {
+    if (ch == XK_space && !context->composition().empty() &&
+        context->composition().back().HasTag("prediction")) {
+      return kNoop;
+    }
+
     if ((ch >= XK_0 && ch <= XK_9) || (ch >= XK_KP_0 && ch <= XK_KP_9)) {
       int digit = (ch >= XK_KP_0 && ch <= XK_KP_9) ? ch - XK_KP_0 : ch - XK_0;
-      context->Clear();
       ctx.ResetMemoryChain();
+      context->Clear();
       engine_->CommitText(std::to_string(digit));
       return kAccepted;
     }
 
-    context->Clear();
+    if (ch == XK_BackSpace || ch == XK_Escape) {
+      ctx.ResetMemoryChain();
+      context->Clear();
+      return kAccepted;
+    }
+
     ctx.ResetMemoryChain();
+    context->Clear();
     return kNoop;
+  }
+
+  if (just_committed_ && ch != XK_BackSpace && !key_event.shift() &&
+      !key_event.ctrl() && !key_event.alt()) {
+    just_committed_ = false;
   }
 
   if (!context->IsComposing()) {
@@ -230,8 +216,10 @@ void UserPredictProcessor::OnCommit(Context* ctx) {
     if (state.config().predict_style != "off") {
       state.pending_cands() = state.GetPredictions(state.last_commit());
     }
-    state.predict_count() = 0;
-    state.is_predicting() = false;
+    if (state.config().predict_style != "post") {
+      state.predict_count() = 0;
+      state.is_predicting() = false;
+    }
   } else {
     state.predict_count() = 0;
     state.is_predicting() = false;
