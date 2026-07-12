@@ -100,7 +100,9 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
       return kAccepted;
     }
 
-    ctx.ResetMemoryChain();
+    ctx.is_predicting() = false;
+    ctx.predict_count() = 0;
+    ctx.pending_cands().clear();
     context->Clear();
     return kNoop;
   }
@@ -359,15 +361,13 @@ void UserPredictProcessor::LearnCommit(const string& text) {
     }
   }
 
-  if (should_record) {
-    if (is_terminal_symbol) {
-      state.ResetMemoryChain();
-    } else {
-      state.history().push_back(text);
-      if (state.history().size() > 2)
-        state.history().erase(state.history().begin());
-      state.last_commit() = text;
-    }
+  if (is_terminal_symbol) {
+    state.ResetMemoryChain();
+  } else if (state.last_commit() != text) {
+    state.history().push_back(text);
+    if (state.history().size() > 2)
+      state.history().erase(state.history().begin());
+    state.last_commit() = text;
   }
 
   auto& undo_stack = state.undo_stack();
@@ -427,13 +427,20 @@ void UserPredictProcessor::OnUpdate(Context* ctx) {
       need_create_predict_segment_) {
     CreatePredictSegment(ctx);
     need_create_predict_segment_ = false;
+    predict_segment_created_ = true;
     return;
   }
 
   if (state.is_predicting() && ctx->input().empty() &&
       !need_create_predict_segment_) {
-    ctx->Clear();
-    state.ResetMemoryChain();
+    if (predict_segment_created_) {
+      predict_segment_created_ = false;
+    } else {
+      ctx->Clear();
+      state.is_predicting() = false;
+      state.predict_count() = 0;
+      state.pending_cands().clear();
+    }
   }
 }
 

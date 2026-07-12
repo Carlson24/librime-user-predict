@@ -31,6 +31,7 @@ class UserPredictProcessor : public Processor {
   bool just_committed_ = false;
   bool self_updating_ = false;
   bool need_create_predict_segment_ = false;
+  bool predict_segment_created_ = false;
 };
 
 }  // namespace user_predict

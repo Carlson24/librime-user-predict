@@ -488,6 +488,24 @@ void UserPredictContext::ImportFromFile(std::istream& in) {
   if (!db_ || !in)
     return;
 
+  auto update_db = [&](const string& key, const string& value) {
+    string old_v;
+    if (db_->Fetch(key, &old_v) && !old_v.empty()) {
+      size_t old_pipe = old_v.find('|');
+      size_t new_pipe = value.find('|');
+      time_t old_ts = 0, new_ts = 0;
+      if (old_pipe != string::npos)
+        old_ts = static_cast<time_t>(std::stoll(old_v.substr(old_pipe + 1)));
+      if (new_pipe != string::npos)
+        new_ts = static_cast<time_t>(std::stoll(value.substr(new_pipe + 1)));
+
+      if (new_ts > old_ts)
+        db_->Update(key, value);
+    } else {
+      db_->Update(key, value);
+    }
+  };
+
   string line;
   while (std::getline(in, line)) {
     while (!line.empty() && (line.back() == '\n' || line.back() == '\r'))
@@ -497,23 +515,30 @@ void UserPredictContext::ImportFromFile(std::istream& in) {
     if (tab_pos == string::npos)
       continue;
 
-    string k = line.substr(0, tab_pos);
-    string v = line.substr(tab_pos + 1);
+    if (line.compare(0, 2, "S\t") == 0) {
+      string ts = std::to_string(std::time(nullptr));
+      string value = "1|" + ts;
 
-    string old_v;
-    if (db_->Fetch(k, &old_v) && !old_v.empty()) {
-      size_t old_pipe = old_v.find('|');
-      size_t new_pipe = v.find('|');
-      time_t old_ts = 0, new_ts = 0;
-      if (old_pipe != string::npos)
-        old_ts = static_cast<time_t>(std::stoll(old_v.substr(old_pipe + 1)));
-      if (new_pipe != string::npos)
-        new_ts = static_cast<time_t>(std::stoll(v.substr(new_pipe + 1)));
+      size_t pos = 0;
+      vector<string> tokens;
+      while (pos < line.size()) {
+        size_t next = line.find('\t', pos);
+        if (next == string::npos) {
+          tokens.push_back(line.substr(pos));
+          break;
+        }
+        tokens.push_back(line.substr(pos, next - pos));
+        pos = next + 1;
+      }
 
-      if (new_ts > old_ts)
-        db_->Update(k, v);
+      for (size_t i = 1; i + 1 < tokens.size(); i++) {
+        string key = "S\t" + tokens[i] + "\t" + tokens[i + 1];
+        update_db(key, value);
+      }
     } else {
-      db_->Update(k, v);
+      string k = line.substr(0, tab_pos);
+      string v = line.substr(tab_pos + 1);
+      update_db(k, v);
     }
   }
 
