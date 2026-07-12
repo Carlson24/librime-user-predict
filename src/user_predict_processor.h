@@ -30,6 +30,7 @@ class UserPredictProcessor : public Processor {
   connection delete_connection_;
   bool just_committed_ = false;
   bool self_updating_ = false;
+  bool need_create_predict_segment_ = false;
 };
 
 }  // namespace user_predict

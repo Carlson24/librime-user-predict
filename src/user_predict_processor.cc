@@ -216,6 +216,9 @@ void UserPredictProcessor::OnCommit(Context* ctx) {
     if (state.config().predict_style != "off") {
       state.pending_cands() = state.GetPredictions(state.last_commit());
     }
+    if (state.config().predict_style == "post") {
+      need_create_predict_segment_ = true;
+    }
     if (state.config().predict_style != "post") {
       state.predict_count() = 0;
       state.is_predicting() = false;
@@ -420,9 +423,17 @@ void UserPredictProcessor::OnUpdate(Context* ctx) {
     return;
 
   if (state.config().predict_style == "post" && !ctx->IsComposing() &&
-      ctx->get_option("prediction") && !state.pending_cands().empty()) {
+      ctx->get_option("prediction") && !state.pending_cands().empty() &&
+      need_create_predict_segment_) {
     CreatePredictSegment(ctx);
+    need_create_predict_segment_ = false;
     return;
+  }
+
+  if (state.is_predicting() && ctx->input().empty() &&
+      !need_create_predict_segment_) {
+    ctx->Clear();
+    state.ResetMemoryChain();
   }
 }
 
