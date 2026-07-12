@@ -118,18 +118,6 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
       return kNoop;
     }
 
-    static const map<int, const char*> kSymbolMap = {
-        {XK_question, "\xEF\xBC\x9F"},
-        {XK_exclam, "\xEF\xBC\x81"},
-        {XK_comma, "\xEF\xBC\x8C"},
-        {XK_period, "\xE3\x80\x82"},
-    };
-
-    auto sym = kSymbolMap.find(ch);
-    if (sym != kSymbolMap.end()) {
-      engine_->CommitText(sym->second);
-      return kAccepted;
-    }
   }
 
   if (context->HasMenu() && (key_event.shift() || key_event.ctrl()) &&
@@ -436,10 +424,10 @@ void UserPredictProcessor::OnUpdate(Context* ctx) {
     if (predict_segment_created_) {
       predict_segment_created_ = false;
     } else {
-      ctx->Clear();
       state.is_predicting() = false;
       state.predict_count() = 0;
       state.pending_cands().clear();
+      ctx->Clear();
     }
   }
 }
