@@ -64,6 +64,7 @@ class UserPredictContext {
   static bool IsChineseChar(const string& c);
   static bool IsToneSymbol(const string& text);
   static bool IsValidCommitText(const string& text);
+  static bool IsPunctuation(const string& text);
   static vector<string> GetUtf8Chars(const string& str);
   static size_t Utf8Len(const string& str);
   static vector<int> GetSuffixLengths(int len);

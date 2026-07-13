@@ -22,7 +22,8 @@ an<Translation> UserPredictTranslator::Query(const string& input,
   if (!state.initialized())
     return nullptr;
 
-  if (state.config().predict_style != "post")
+  if (state.config().predict_style != "post" &&
+      state.config().predict_style != "all")
     return nullptr;
 
   if (!engine_->context()->get_option("prediction"))

@@ -13,7 +13,8 @@
 - **清理**: 自动清理过期数据（1/2-Gram 90天，P-Gram 30天）
 - **导入/导出**: 支持备份与恢复
 - **ABA 防折返**: 防止"你好"→"你好"的无效自循环
-- **语境隔离**: 标点断句 + 超时自动重置记忆链
+- **语境隔离**: 语气符号后跟句尾助词时断句 + 超时自动重置记忆链
+- **标点不打断**: 输入标点符号（,，。！？等）不会中断预测链
 
 ## 构建
 
@@ -62,7 +63,7 @@ switches:
 
 | 键 | 类型 | 默认值 | 说明 |
 |----|------|--------|------|
-| `predict_style` | string | `"reorder"` | 预测模式 |
+| `predict_style` | string | `"reorder"` | 预测模式：`reorder` / `post` / `all` / `off` |
 | `max_candidates` | int | `5` | 预测候选最大数量 |
 | `max_predictions` | int | `3` | 连续预测链最大长度 |
 | `expiry_days` | int | `90` | 数据保留天数 |
@@ -98,6 +99,23 @@ engine:
 user_predict:
   predict_style: "post"
 ```
+
+**all** — 混合模式，同时启用 post 预测与 reorder 调频：
+
+```yaml
+engine:
+  processors:
+    - user_predict_processor
+  translators:
+    - user_predict_translator
+  filters:
+    - user_predict_filter
+
+user_predict:
+  predict_style: "all"
+```
+
+> 效果：上屏"你好"后显示"世界"等预测候选（post），用户继续输入"世界"的拼音时，"世界"会被自动提权到候选列表首位（reorder）。
 
 ### 管理命令
 

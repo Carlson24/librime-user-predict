@@ -98,7 +98,8 @@ an<Translation> UserPredictFilter::Apply(an<Translation> translation,
   if (!ctx->get_option("prediction"))
     return translation;
 
-  if (state.config().predict_style != "reorder")
+  if (state.config().predict_style != "reorder" &&
+      state.config().predict_style != "all")
     return translation;
 
   if (BuildReorderMap()) {

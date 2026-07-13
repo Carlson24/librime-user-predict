@@ -74,6 +74,29 @@ bool UserPredictContext::IsValidCommitText(const string& text) {
   return true;
 }
 
+bool UserPredictContext::IsPunctuation(const string& text) {
+  if (text.empty())
+    return false;
+  auto chars = GetUtf8Chars(text);
+  for (const auto& c : chars) {
+    unsigned char first = static_cast<unsigned char>(c[0]);
+    if (c.size() == 1) {
+      if ((first >= 'a' && first <= 'z') || (first >= 'A' && first <= 'Z') ||
+          (first >= '0' && first <= '9')) {
+        LOG(INFO) << "user_predict: IsPunctuation FALSE, ascii alnum char='" << c << "'";
+        return false;
+      }
+    } else {
+      if (IsChineseChar(c)) {
+        LOG(INFO) << "user_predict: IsPunctuation FALSE, CJK char='" << c << "'";
+        return false;
+      }
+    }
+  }
+  LOG(INFO) << "user_predict: IsPunctuation TRUE, text=[" << text << "]";
+  return true;
+}
+
 vector<string> UserPredictContext::GetUtf8Chars(const string& str) {
   vector<string> chars;
   if (str.empty())
