@@ -262,7 +262,8 @@ void UserPredictContext::PeriodicCleanup() {
   db_->Update(kMetaLastClean, std::to_string(now));
 
   if (deleted_count > 0) {
-    LOG(INFO) << "user_predict: cleaned " << deleted_count << " expired entries.";
+    LOG(INFO) << "user_predict: cleaned " << deleted_count
+              << " expired entries.";
   }
 }
 

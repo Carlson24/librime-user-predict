@@ -132,7 +132,6 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
       ctx.ResetMemoryChain();
       return kNoop;
     }
-
   }
 
   if (context->HasMenu() && (key_event.shift() || key_event.ctrl()) &&
@@ -443,9 +442,9 @@ void UserPredictProcessor::OnUpdate(Context* ctx) {
     return;
 
   if ((state.config().predict_style == "post" ||
-       state.config().predict_style == "all") && !ctx->IsComposing() &&
-      ctx->get_option("prediction") && !state.pending_cands().empty() &&
-      need_create_predict_segment_) {
+       state.config().predict_style == "all") &&
+      !ctx->IsComposing() && ctx->get_option("prediction") &&
+      !state.pending_cands().empty() && need_create_predict_segment_) {
     CreatePredictSegment(ctx);
     need_create_predict_segment_ = false;
     predict_segment_created_ = true;
