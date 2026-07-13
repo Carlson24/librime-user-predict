@@ -82,18 +82,13 @@ bool UserPredictContext::IsPunctuation(const string& text) {
     unsigned char first = static_cast<unsigned char>(c[0]);
     if (c.size() == 1) {
       if ((first >= 'a' && first <= 'z') || (first >= 'A' && first <= 'Z') ||
-          (first >= '0' && first <= '9')) {
-        LOG(INFO) << "user_predict: IsPunctuation FALSE, ascii alnum char='" << c << "'";
+          (first >= '0' && first <= '9'))
         return false;
-      }
     } else {
-      if (IsChineseChar(c)) {
-        LOG(INFO) << "user_predict: IsPunctuation FALSE, CJK char='" << c << "'";
+      if (IsChineseChar(c))
         return false;
-      }
     }
   }
-  LOG(INFO) << "user_predict: IsPunctuation TRUE, text=[" << text << "]";
   return true;
 }
 

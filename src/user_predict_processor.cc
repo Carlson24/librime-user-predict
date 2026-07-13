@@ -67,13 +67,6 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
   int ch = key_event.keycode();
   string input = context->input();
 
-  if (!key_event.release() && ctx.is_predicting()) {
-    LOG(INFO) << "user_predict: ProcessKeyEvent ch=0x" << std::hex << ch
-              << " predicting=" << ctx.is_predicting()
-              << " composing=" << context->IsComposing()
-              << " punct=" << IsPunctuationKeycode(ch);
-  }
-
   if (ch == XK_BackSpace) {
     auto current_time = std::chrono::steady_clock::now();
     bool is_safe_to_undo = !context->IsComposing() || ctx.is_predicting();
@@ -99,7 +92,6 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
   }
 
   if (ctx.is_predicting()) {
-    LOG(INFO) << "user_predict: predicting block entered, ch=0x" << std::hex << ch;
     if (ch == XK_space && !context->composition().empty() &&
         context->composition().back().HasTag("prediction")) {
       return kNoop;
@@ -120,11 +112,9 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
     }
 
     if (IsPunctuationKeycode(ch)) {
-      LOG(INFO) << "user_predict: punctuation key let through, ch=0x" << std::hex << ch;
       return kNoop;
     }
 
-    LOG(INFO) << "user_predict: non-punct key, exiting predicting, ch=0x" << std::hex << ch;
     ctx.is_predicting() = false;
     ctx.predict_count() = 0;
     ctx.pending_cands().clear();
@@ -190,21 +180,13 @@ void UserPredictProcessor::OnCommit(Context* ctx) {
   if (text.empty())
     return;
 
-  LOG(INFO) << "user_predict: OnCommit text=[" << text << "]"
-            << " punct=" << state.IsPunctuation(text)
-            << " valid=" << state.IsValidCommitText(text)
-            << " tone=" << state.IsToneSymbol(text);
-
   if (state.IsPunctuation(text)) {
-    LOG(INFO) << "user_predict: OnCommit skipping punctuation, text=[" << text << "]";
     auto current_time = std::chrono::steady_clock::now();
     state.last_commit_time() = current_time;
     state.last_action_time() = current_time;
     bool prediction_on = ctx->get_option("prediction");
     if (prediction_on && state.config().predict_style != "off") {
       state.pending_cands() = state.GetPredictions(state.last_commit());
-      LOG(INFO) << "user_predict: regenerated " << state.pending_cands().size()
-                << " predictions for [" << state.last_commit() << "] after puncture";
     }
     if (state.config().predict_style == "post" ||
         state.config().predict_style == "all") {
@@ -253,11 +235,6 @@ void UserPredictProcessor::OnCommit(Context* ctx) {
       prediction_on) {
     if (state.config().predict_style != "off") {
       state.pending_cands() = state.GetPredictions(state.last_commit());
-      LOG(INFO) << "user_predict: generated " << state.pending_cands().size()
-                << " predictions for [" << state.last_commit() << "]"
-                << " style=" << state.config().predict_style
-                << " predicting=" << state.is_predicting()
-                << " count=" << state.predict_count();
     }
     if (state.config().predict_style == "post" ||
         state.config().predict_style == "all") {
