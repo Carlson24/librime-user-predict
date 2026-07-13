@@ -71,6 +71,7 @@ switches:
 | `context_timeout` | int | `30000` | 语境超时（毫秒） |
 | `max_memory_branches` | int | `15` | 每次查询最大分支数 |
 | `db_name` | string | `"user_predict"` | 数据库名（自动补 `.userdb`） |
+| `use_space_to_commit` | bool | `true` | 是否允许空格键上屏预测候选（仅 post/all 模式） |
 
 ### 预测模式
 

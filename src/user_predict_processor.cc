@@ -94,6 +94,10 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
   if (ctx.is_predicting()) {
     if (ch == XK_space && !context->composition().empty() &&
         context->composition().back().HasTag("prediction")) {
+      if (!ctx.config().use_space_to_commit) {
+        engine_->sink()(" ");
+        return kAccepted;
+      }
       return kNoop;
     }
 

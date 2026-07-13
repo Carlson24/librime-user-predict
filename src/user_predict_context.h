@@ -30,6 +30,7 @@ struct UserPredictConfig {
   int64_t context_timeout_ms = 30000;
   string predict_style = "reorder";
   string db_name = "user_predict";
+  bool use_space_to_commit = true;
 };
 
 struct PredictCandidate {

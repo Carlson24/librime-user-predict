@@ -186,6 +186,9 @@ void UserPredictContext::LoadConfig(Config* config) {
       config_.db_name.compare(config_.db_name.size() - 7, 7, ".userdb") != 0) {
     config_.db_name += ".userdb";
   }
+
+  config->GetBool("user_predict/use_space_to_commit",
+                  &config_.use_space_to_commit);
 }
 
 bool UserPredictContext::EnsureDb() {
