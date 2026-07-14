@@ -220,7 +220,16 @@ void UserPredictProcessor::OnCommit(Context* ctx) {
     state.predict_count()++;
   }
 
-  if (state.predict_count() > state.config().max_predictions) {
+  bool is_sgram_prediction = false;
+  for (const auto& c : state.pending_cands()) {
+    if (c.word == text && c.db_key.compare(0, 2, "S\t") == 0) {
+      is_sgram_prediction = true;
+      break;
+    }
+  }
+
+  if (!is_sgram_prediction &&
+      state.predict_count() > state.config().max_predictions) {
     state.is_predicting() = false;
     state.predict_count() = 0;
     state.pending_cands().clear();
@@ -234,7 +243,8 @@ void UserPredictProcessor::OnCommit(Context* ctx) {
   just_committed_ = true;
 
   bool prediction_on = ctx->get_option("prediction");
-  if (state.predict_count() <= state.config().max_predictions &&
+  if ((is_sgram_prediction ||
+       state.predict_count() <= state.config().max_predictions) &&
       prediction_on) {
     if (state.config().predict_style != "off") {
       state.pending_cands() = state.GetPredictions(state.last_commit());

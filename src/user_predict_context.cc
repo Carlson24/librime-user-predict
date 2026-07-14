@@ -337,16 +337,23 @@ void UserPredictContext::FetchAndClean(const string& query_key,
                 return a.weight > b.weight;
               });
 
+    bool is_sgram = (query_key.compare(0, 2, "S\t") == 0);
     int i = 0;
     for (const auto& c : prefix_cands) {
-      if (i >= config_.max_memory_branches) {
-        db_->Update(c.db_key,
-                    string{"0|"} + std::to_string(static_cast<int>(now)));
-      } else {
+      if (is_sgram) {
         if (seen.find(c.word) == seen.end()) {
           cands.push_back(c);
           seen.insert(c.word);
+        }
+      } else {
+        if (i >= config_.max_memory_branches) {
+          db_->Update(c.db_key,
+                      string{"0|"} + std::to_string(static_cast<int>(now)));
         } else {
+          if (seen.find(c.word) == seen.end()) {
+            cands.push_back(c);
+            seen.insert(c.word);
+          }
         }
       }
       i++;
