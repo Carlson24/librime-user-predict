@@ -91,16 +91,16 @@ ProcessResult UserPredictProcessor::ProcessKeyEvent(const KeyEvent& key_event) {
     }
   }
 
-  if (ctx.is_predicting()) {
-    if (ch == XK_space && !context->composition().empty() &&
-        context->composition().back().HasTag("prediction")) {
-      if (!ctx.config().use_space_to_commit) {
-        engine_->sink()(" ");
-        return kAccepted;
-      }
-      return kNoop;
+  if (ch == XK_space && !context->composition().empty() &&
+      context->composition().back().HasTag("prediction")) {
+    if (!ctx.config().use_space_to_commit) {
+      engine_->sink()(" ");
+      return kAccepted;
     }
+    return kNoop;
+  }
 
+  if (ctx.is_predicting()) {
     if ((ch >= XK_0 && ch <= XK_9) || (ch >= XK_KP_0 && ch <= XK_KP_9)) {
       int digit = (ch >= XK_KP_0 && ch <= XK_KP_9) ? ch - XK_KP_0 : ch - XK_0;
       ctx.ResetMemoryChain();

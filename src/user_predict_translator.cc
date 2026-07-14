@@ -38,7 +38,7 @@ an<Translation> UserPredictTranslator::Query(const string& input,
     if (count >= state.config().max_candidates)
       break;
     auto cand =
-        New<SimpleCandidate>("prediction", segment.start, segment.end, c.word);
+        New<SimpleCandidate>("predict", segment.start, segment.end, c.word);
     cand->set_quality(1000 - count);
     translation->Append(cand);
     count++;
