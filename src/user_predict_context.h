@@ -26,7 +26,7 @@ struct UserPredictConfig {
   int p_expiry_seconds = 30 * 24 * 3600;
   int max_memory_branches = 15;
   double decay_rate = 0.85;
-  int scan_limit = 80;
+  int scan_limit = 40;
   int64_t context_timeout_ms = 30000;
   string predict_style = "reorder";
   string db_name = "user_predict";

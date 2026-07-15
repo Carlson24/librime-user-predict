@@ -148,7 +148,6 @@ void UserPredictContext::Initialize(Config* config) {
 
   LoadConfig(config);
   EnsureDb();
-  PeriodicCleanup();
 }
 
 void UserPredictContext::Cleanup() {

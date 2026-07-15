@@ -271,6 +271,8 @@ void UserPredictProcessor::LearnCommit(const string& text) {
   if (!db)
     return;
 
+  db->BeginTransaction();
+
   map<string, string> last_written_keys;
 
   auto update_memory = [&](const string& key) {
@@ -402,6 +404,8 @@ void UserPredictProcessor::LearnCommit(const string& text) {
       state.history().erase(state.history().begin());
     state.last_commit() = text;
   }
+
+  db->CommitTransaction();
 
   auto& undo_stack = state.undo_stack();
   if (!last_written_keys.empty()) {
